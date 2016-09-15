@@ -2,10 +2,12 @@ package com.cybozu;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
+
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.HttpTransport;
@@ -56,9 +58,26 @@ public class GoogleCalendar {
 	public String addSchedule(Date start, Date end, String title, String description, String location, String color, ArrayList<String> recurrence, TimeZone timezone) throws Exception {
 		String id = null;
 
-		Event googleSchedule = new Event();
-		googleSchedule.setStart(new EventDateTime().setTimeZone(timezone.getID()).setDateTime(new DateTime(start)));
-		googleSchedule.setEnd(new EventDateTime().setTimeZone(timezone.getID()).setDateTime(new DateTime(end)));
+    Event googleSchedule = new Event();
+
+    // 00:00:00 から始まる予定は終日予定とする
+    java.util.Calendar calendar = java.util.Calendar.getInstance();
+    calendar.setTime(start);
+    if ( calendar.get(java.util.Calendar.HOUR_OF_DAY) == 0
+         && calendar.get(java.util.Calendar.MINUTE) == 0
+         && calendar.get(java.util.Calendar.SECOND) == 0 ){
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String startDateStr = dateFormat.format(start);
+        String endDateStr = dateFormat.format(end);
+        DateTime startDateTime = new DateTime(startDateStr);
+        DateTime endDateTime = new DateTime(endDateStr);
+        googleSchedule.setStart(new EventDateTime().setTimeZone(timezone.getID()).setDate(startDateTime));
+        googleSchedule.setEnd(new EventDateTime().setTimeZone(timezone.getID()).setDate(endDateTime));
+    }
+    else{
+        googleSchedule.setStart(new EventDateTime().setTimeZone(timezone.getID()).setDateTime(new DateTime(start)));
+        googleSchedule.setEnd(new EventDateTime().setTimeZone(timezone.getID()).setDateTime(new DateTime(end)));
+    }
 		googleSchedule.setRecurrence(null);
 		googleSchedule.setSummary(title.trim());
 		googleSchedule.setDescription(description.trim());
