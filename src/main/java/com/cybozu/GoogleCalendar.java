@@ -55,17 +55,12 @@ public class GoogleCalendar {
 		return this.CALENDAR_NAME;
 	}
 
-	public String addSchedule(Date start, Date end, String title, String description, String location, String color, ArrayList<String> recurrence, TimeZone timezone) throws Exception {
+  public String addSchedule(Date start, Date end, String title, String description, String location, String color, ArrayList<String> recurrence, TimeZone timezone, boolean isAllDaySchedule) throws Exception {
 		String id = null;
 
     Event googleSchedule = new Event();
 
-    // 00:00:00 から始まる予定は終日予定とする
-    java.util.Calendar calendar = java.util.Calendar.getInstance();
-    calendar.setTime(start);
-    if ( calendar.get(java.util.Calendar.HOUR_OF_DAY) == 0
-         && calendar.get(java.util.Calendar.MINUTE) == 0
-         && calendar.get(java.util.Calendar.SECOND) == 0 ){
+    if (isAllDaySchedule){ // 終日予定
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String startDateStr = dateFormat.format(start);
         String endDateStr = dateFormat.format(end);

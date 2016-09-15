@@ -168,6 +168,7 @@ public class GGsync {
 				long garoonScheduleVersion;
 				ArrayList<String> recurrenceList = new ArrayList<String>();
 				TimeZone scheduleTimezone = null;
+        boolean isAllDaySchedule = false; // 終日予定ならtrue
 
 				/** ガルーンのスケジュール情報 **/
 				com.cybozu.garoon3.schedule.Event garoonSchedule = i.next();
@@ -231,6 +232,7 @@ public class GGsync {
 					} else if (garoonSchedule.isAllDay()) {
 						scheduleStart = new Date(span.getStart().getTime());
 						scheduleEnd = new Date(span.getEnd().getTime() + 24 * 60 * 60 * 1000);
+            isAllDaySchedule = true;
 					}
 					scheduleColor = googleCalendarNormalColor;
 					scheduleAllEnd = scheduleEnd;
@@ -243,6 +245,7 @@ public class GGsync {
 					scheduleEnd = new Date(span.getEnd().getTime() + 24 * 60 * 60 * 1000);
 					scheduleColor = googleCalendarBannerColor;
 					scheduleAllEnd = scheduleEnd;
+          isAllDaySchedule = true;
 				} else if (garoonSchedule.getEventType() == EventType.TEMPORARY) {
 					/**
 					 * 仮予定
@@ -284,6 +287,7 @@ public class GGsync {
 						scheduleStart = new Date(span.getStart().getTime());
 						scheduleEnd = new Date(span.getEnd().getTime() + 24 * 60 * 60 * 1000);
 						until = new Date(repeatInfo.getEndDate().getTime());
+            isAllDaySchedule = true;
 					}
 					scheduleColor = googleCalendarNormalColor;
 					scheduleAllEnd = until;
@@ -382,8 +386,7 @@ public class GGsync {
 
 				try {
 					/** グーグルカレンダーに登録 **/
-					googleScheduleId = googleCalendar.addSchedule(scheduleStart, scheduleEnd, 
-							scheduleTitle, scheduleDescription, scheduleLocation, scheduleColor, recurrenceList, scheduleTimezone);
+					googleScheduleId = googleCalendar.addSchedule(scheduleStart, scheduleEnd, scheduleTitle, scheduleDescription, scheduleLocation, scheduleColor, recurrenceList, scheduleTimezone, isAllDaySchedule);
 
 					/** グーグルカレンダーへの登録情報をSQLiteに登録 **/
 					ggsyncDb.addScheduleInfo(garoonScheduleId, garoonScheduleVersion, googleScheduleId, scheduleAllEnd);
